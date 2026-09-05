@@ -4,6 +4,7 @@ import { dbService } from '../services/db';
 import { useAuth } from '../context/AuthContext';
 import { DailySummaryModal } from './DailySummaryModal';
 import { ThreeDCard } from './ThreeDCard';
+import { toLocalDateKey } from '../utils/localDate';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Search,
@@ -56,7 +57,7 @@ export const ReportHistory: React.FC<ReportHistoryProps> = ({ onSelectReport, in
   const [filterMode, setFilterMode] = useState<'today' | 'date' | 'month' | 'year' | 'range' | 'all'>('today');
 
   // Today's YYYY-MM-DD string
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = toLocalDateKey(new Date());
   const currentMonthStr = todayStr.slice(0, 7); // e.g. 2026-08
   const currentYearStr = todayStr.slice(0, 4); // e.g. 2026
 
@@ -108,7 +109,7 @@ export const ReportHistory: React.FC<ReportHistoryProps> = ({ onSelectReport, in
   // Filter computation
   const filteredReports = useMemo(() => {
     return reports.filter((rep) => {
-      const repDateStr = (rep.reportedAt || rep.specimenReceivedAt || '').slice(0, 10);
+      const repDateStr = toLocalDateKey(rep.reportedAt || rep.specimenReceivedAt || '');
       const repMonthStr = repDateStr.slice(0, 7);
       const repYearStr = repDateStr.slice(0, 4);
 

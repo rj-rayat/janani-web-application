@@ -43,6 +43,7 @@ import {
   Laptop,
 } from 'lucide-react';
 import OfficialLogo from './components/OfficialLogo';
+import { toLocalDateKey } from './utils/localDate';
 
 const MainApp: React.FC = () => {
   const { currentUser, logout, switchRole } = useAuth();
@@ -535,7 +536,7 @@ const MainApp: React.FC = () => {
       {isDailySummaryOpen && (
         <DailySummaryModal
           reports={reports}
-          selectedDate={new Date().toISOString().slice(0, 10)}
+          selectedDate={toLocalDateKey(new Date())}
           onClose={() => setIsDailySummaryOpen(false)}
         />
       )}

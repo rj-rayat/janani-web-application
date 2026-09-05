@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { dbService } from '../services/db';
 import { Report, Order } from '../types';
+import { toLocalDateKey } from '../utils/localDate';
 import { useAuth } from '../context/AuthContext';
 import { DailySummaryModal } from './DailySummaryModal';
 import { ThreeDCard } from './ThreeDCard';
@@ -53,11 +54,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const templates = dbService.getTemplates();
   const doctors = dbService.getDoctors();
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const [todayStr, setTodayStr] = useState(() => toLocalDateKey(new Date()));
+
+  // Roll the dashboard over automatically at midnight (and after returning to the tab).
+  useEffect(() => {
+    const updateCurrentDay = () => setTodayStr(toLocalDateKey(new Date()));
+    const intervalId = window.setInterval(updateCurrentDay, 60_000);
+
+    window.addEventListener('focus', updateCurrentDay);
+    document.addEventListener('visibilitychange', updateCurrentDay);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', updateCurrentDay);
+      document.removeEventListener('visibilitychange', updateCurrentDay);
+    };
+  }, []);
 
   // Filter and tabs state in dark workspace
   const [workspaceTab, setWorkspaceTab] = useState<'all' | 'draft' | 'reviewed' | 'authorized' | 'verified'>('all');
-  const [selectedReportId, setSelectedReportId] = useState<string>(reports[0]?.id || '');
+  const [selectedReportId, setSelectedReportId] = useState<string>('');
   
   // Dashboard filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,17 +82,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
   // Computed stats
   const todayReports = reports.filter(
-    (r) => (r.reportedAt || r.specimenReceivedAt || '').slice(0, 10) === todayStr
+    (r) => toLocalDateKey(r.reportedAt || r.specimenReceivedAt || '') === todayStr
   );
-  const todayOrders = orders.filter((o) => (o.createdAt || '').slice(0, 10) === todayStr);
+  const todayOrders = orders.filter((o) => toLocalDateKey(o.createdAt || '') === todayStr);
+  const todayPatientCount = new Set(todayReports.map((r) => r.uhid)).size;
 
-  const pendingTechReview = reports.filter((r) => r.status === 'draft');
-  const pendingDoctorAuth = reports.filter((r) => r.status === 'reviewed_by_tech');
-  const verifiedFinal = reports.filter(
+  const pendingTechReview = todayReports.filter((r) => r.status === 'draft');
+  const pendingDoctorAuth = todayReports.filter((r) => r.status === 'reviewed_by_tech');
+  const verifiedFinal = todayReports.filter(
     (r) => r.status === 'verified_final' || r.status === 'authorized_by_doctor'
   );
 
-  const criticalReports = reports.filter((r) =>
+  const criticalReports = todayReports.filter((r) =>
     Object.values(r.results).some((res) => res.abnormalFlag === 'CRITICAL')
   );
 
@@ -85,11 +102,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const todayPaidRevenue = todayOrders.reduce((sum, o) => sum + (o.paidAmount || 0), 0);
   const todayDueRevenue = todayOrders.reduce((sum, o) => sum + (o.dueAmount || 0), 0);
 
-  // Selected report for the interactive workspace panel
-  const selectedReport = reports.find((r) => r.id === selectedReportId) || reports[0] || null;
+  const completedTurnaroundHours = todayReports.flatMap((report) => {
+    const completedAt = report.verifiedAt || report.authorizedAt;
+    if (!completedAt || !report.specimenReceivedAt) return [];
 
-  // Filter reports in the dark workspace
-  const workspaceFilteredReports = reports.filter((rep) => {
+    const durationMs = new Date(completedAt).getTime() - new Date(report.specimenReceivedAt).getTime();
+    return durationMs >= 0 ? [durationMs / 3_600_000] : [];
+  });
+  const averageTurnaroundHours = completedTurnaroundHours.length
+    ? completedTurnaroundHours.reduce((sum, hours) => sum + hours, 0) / completedTurnaroundHours.length
+    : null;
+
+  // Selected report for the interactive workspace panel
+  const selectedReport = todayReports.find((r) => r.id === selectedReportId) || todayReports[0] || null;
+  const activeSelectedReportId = selectedReport?.id || '';
+
+  // The dashboard worklist is intentionally limited to the current local day.
+  const workspaceFilteredReports = todayReports.filter((rep) => {
     if (workspaceTab === 'draft' && rep.status !== 'draft') return false;
     if (workspaceTab === 'reviewed' && rep.status !== 'reviewed_by_tech') return false;
     if (workspaceTab === 'authorized' && rep.status !== 'authorized_by_doctor') return false;
@@ -173,7 +202,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </span>
             <div className="flex items-center gap-1.5 mt-1 text-[11px] font-bold text-rose-600">
               <TrendingUp className="w-3.5 h-3.5" />
-              <span>{criticalReports.length > 0 ? '+12.5% panic alerts' : 'All parameters stable'}</span>
+              <span>
+                {criticalReports.length > 0
+                  ? 'Requires attention today'
+                  : todayReports.length > 0
+                    ? 'All parameters stable today'
+                    : 'No reports recorded today'}
+              </span>
             </div>
           </div>
 
@@ -203,11 +238,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
           <div>
             <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight block">
-              {todayReports.length} Patients
+              {todayPatientCount} Patients
             </span>
             <div className="flex items-center gap-1.5 mt-1 text-[11px] font-bold text-teal-600">
               <TrendingUp className="w-3.5 h-3.5" />
-              <span>+8.2% from yesterday</span>
+              <span>Current-day registrations only</span>
             </div>
           </div>
 
@@ -236,11 +271,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
           <div>
             <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight block">
-              3.8 Hours
+              {averageTurnaroundHours === null ? '—' : `${averageTurnaroundHours.toFixed(1)} Hours`}
             </span>
             <div className="flex items-center gap-1.5 mt-1 text-[11px] font-bold text-emerald-600">
               <TrendingUp className="w-3.5 h-3.5" />
-              <span>+2.4 hrs faster turnaround</span>
+              <span>
+                {completedTurnaroundHours.length > 0
+                  ? `${completedTurnaroundHours.length} completed today`
+                  : 'No completed reports today'}
+              </span>
             </div>
           </div>
 
@@ -274,12 +313,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
           <div>
             <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight block">
-              ৳ {todayTotalRevenue > 0 ? todayTotalRevenue.toLocaleString() : '186,540.00'}
+              ৳ {todayTotalRevenue.toLocaleString()}
             </span>
             <div className="flex items-center gap-1.5 mt-1 text-[11px] font-bold text-slate-500">
-              <span>Paid: ৳ {todayPaidRevenue > 0 ? todayPaidRevenue.toLocaleString() : '162,000'}</span>
+              <span>Paid: ৳ {todayPaidRevenue.toLocaleString()}</span>
               <span>•</span>
-              <span className="text-amber-600">Due: ৳ {todayDueRevenue > 0 ? todayDueRevenue.toLocaleString() : '24,540'}</span>
+              <span className="text-amber-600">Due: ৳ {todayDueRevenue.toLocaleString()}</span>
             </div>
           </div>
 
@@ -388,7 +427,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              All Reports ({reports.length})
+              Today's Reports ({todayReports.length})
             </button>
 
             <button
@@ -442,11 +481,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <div className="lg:col-span-5 space-y-2 max-h-[580px] overflow-y-auto pr-1">
             {workspaceFilteredReports.length === 0 ? (
               <div className="text-center py-12 text-slate-500 text-xs">
-                No reports match the current filter.
+                No reports recorded for today.
               </div>
             ) : (
               workspaceFilteredReports.map((rep) => {
-                const isSelected = rep.id === selectedReportId;
+                const isSelected = rep.id === activeSelectedReportId;
                 const hasCritical = Object.values(rep.results).some((r: any) => r?.abnormalFlag === 'CRITICAL');
 
                 return (

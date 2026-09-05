@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Report } from '../types';
 import { dbService } from '../services/db';
+import { toLocalDateKey } from '../utils/localDate';
 import { JananiEmblem } from './JananiLogo';
 import {
   Printer,
@@ -29,7 +30,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({
 
   // Filter reports specifically for this selected date
   const dayReports = reports.filter((rep) => {
-    const repDate = (rep.reportedAt || rep.specimenReceivedAt || '').slice(0, 10);
+    const repDate = toLocalDateKey(rep.reportedAt || rep.specimenReceivedAt || '');
     return repDate === selectedDate;
   });
 
