@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 330" fill="none" width="100%" height="100%">
+  <!-- House Gable Roof Peak & Right Eave -->
+  <path d="M225 15 L360 145 C365 150 362 160 353 160 H327 L225 62 L125 158 C120 163 113 163 108 158 L90 140 L225 15 Z" fill="currentColor"/>
+  
+  <!-- 4-Pane Attic Window Grid in Peak -->
+  <rect x="201" y="72" width="20" height="20" rx="3" fill="currentColor"/>
+  <rect x="229" y="72" width="20" height="20" rx="3" fill="currentColor"/>
+  <rect x="201" y="100" width="20" height="20" rx="3" fill="currentColor"/>
+  <rect x="229" y="100" width="20" height="20" rx="3" fill="currentColor"/>
+
+  <!-- Left Roof Swoop into Letter 'J' -->
+  <path d="M100 145 C100 135 107 128 115 128 H121 V220 C121 255 100 280 60 280 C37 280 17 268 10 252 C7 245 10 238 17 236 C24 234 31 238 35 244 C40 252 48 256 60 256 C80 256 91 242 91 220 V152 H100 Z" fill="currentColor"/>
+
+  <!-- Letter 'D' -->
+  <path d="M140 152 H187 C220 152 243 174 243 212 C243 250 220 272 187 272 H140 C133 272 128 267 128 260 V164 C128 157 133 152 140 152 Z M158 174 V250 H185 C205 250 220 235 220 212 C220 189 205 174 185 174 H158 Z" fill="currentColor"/>
+
+  <!-- Letter 'C' -->
+  <path d="M320 174 C313 162 299 152 279 152 C247 152 225 178 225 212 C225 246 247 272 279 272 C299 272 313 262 320 250 C324 243 321 235 314 232 C307 229 299 232 295 238 C291 244 285 248 278 248 C262 248 249 233 249 212 C249 191 262 176 278 176 C285 176 291 180 295 186 C299 192 307 195 314 192 C321 189 324 181 320 174 Z" fill="currentColor"/>
+
+  <!-- Medical Cross '+' with Heartbeat Pulse on the right -->
+  <g>
+    <!-- Cross Base -->
+    <path d="M345 165 H370 V195 H400 V225 H370 V255 H345 V225 H315 V195 H345 V165 Z" fill="currentColor"/>
+    <!-- Heartbeat ECG Pulse Wave Line -->
+    <path d="M305 210 H337 L345 188 L355 232 L367 196 L375 218 L383 210 H413" fill="none" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

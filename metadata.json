@@ -1,0 +1,6 @@
+{
+  "name": "JANANI Diagnostic Centre",
+  "description": "Comprehensive clinical laboratory and diagnostic management system for Janani Diagnostic Centre, featuring patient registration, test templates, result entry, verification workflows, date-based report history, QR verification, barcodes, and professional A4 printing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

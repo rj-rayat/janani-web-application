@@ -1,0 +1,27 @@
+{
+  "id": "/",
+  "name": "Janani Diagnostic Center - Desktop LIMS Software",
+  "short_name": "Janani LIMS",
+  "description": "Professional Clinical Laboratory & Diagnostic Management Desktop Software for Janani Diagnostic Center, Feni.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f766e",
+  "categories": ["medical", "business", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/fj.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
