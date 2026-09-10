@@ -9,6 +9,7 @@ import {
   User,
 } from '../types';
 import { OFFICIAL_TEST_TEMPLATES } from '../data/testTemplates';
+import { getDefaultSignatoryCount } from '../utils/signatories';
 
 const STORAGE_KEYS = {
   USERS: 'janani_db_users_v2',
@@ -1172,7 +1173,10 @@ class JananiDatabaseService {
         authorizedDoctorDesignation: doc?.designation,
         authorizedDoctorBmdc: doc?.bmdcNo,
         signatories: defaultSignatories,
-        signatoryCount: 3,
+        signatoryCount: getDefaultSignatoryCount({
+          category: tmpl.category,
+          testName: tmpl.name,
+        }),
         testTemplateId: tmpl.id,
         testName: tmpl.name,
         testCode: tmpl.code,

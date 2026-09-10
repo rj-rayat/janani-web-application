@@ -1,6 +1,7 @@
 import React from 'react';
 import { Report, ReportSignatory } from '../../types';
 import { dbService } from '../../services/db';
+import { getDefaultSignatoryCount, pickSignatories } from '../../utils/signatories';
 
 interface ReportSignaturesProps {
   report: Report;
@@ -156,8 +157,13 @@ export const ReportSignatures: React.FC<ReportSignaturesProps> = ({
     ];
   }, [report, isImagingOrCardio]);
 
-  const count = report.signatoryCount || (computedSignatories.length as 1 | 2 | 3) || 3;
-  const activeSignatories = computedSignatories.slice(0, count);
+  const count =
+    report.signatoryCount ||
+    getDefaultSignatoryCount({
+      category: report.category || category,
+      testName: report.testName,
+    });
+  const activeSignatories = pickSignatories(computedSignatories, count);
 
   const gridColsClass =
     count === 1

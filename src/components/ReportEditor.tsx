@@ -10,6 +10,7 @@ import {
 import { dbService } from '../services/db';
 import { useAuth } from '../context/AuthContext';
 import { evaluateParameterResult } from '../utils/abnormalEvaluator';
+import { getDefaultSignatoryCount } from '../utils/signatories';
 import {
   Save,
   CheckCircle2,
@@ -92,7 +93,7 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
       ''
   );
   const [signatoryCount, setSignatoryCount] = useState<1 | 2 | 3>(
-    report.signatoryCount || 3
+    report.signatoryCount || getDefaultSignatoryCount(report)
   );
 
   // Revisions & Feedback

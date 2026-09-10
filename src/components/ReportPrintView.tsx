@@ -3,6 +3,10 @@ import { Report, ReportSignatory, Doctor, LabTechnician } from '../types';
 import { JANANI_INFO } from '../constants/branding';
 import { JananiLetterheadHeader, JananiLetterheadFooter } from './JananiLetterhead';
 import { dbService } from '../services/db';
+import {
+  getDefaultSignatoryCount,
+  pickSignatoryIndices,
+} from '../utils/signatories';
 import { ReportPatientCard } from './reports/ReportPatientCard';
 import { ReportTitleRibbon } from './reports/ReportTitleRibbon';
 import { ReportTrustFooter } from './reports/ReportTrustFooter';
@@ -267,7 +271,15 @@ export const ReportPrintView: React.FC<ReportPrintViewProps> = ({
     ];
   }, [currentReport, doctors, technicians]);
 
-  const signatoryCount = currentReport.signatoryCount || 3;
+  const signatoryCount =
+    currentReport.signatoryCount || getDefaultSignatoryCount(currentReport);
+
+  // Which slot indices of the full [prepared, checked, authorized] list are
+  // actually shown for the current count (1 signatory => the doctor only).
+  const visibleSlotIndices = pickSignatoryIndices(
+    Math.max(activeSignatories.length, 3),
+    signatoryCount
+  );
 
   // Update a signatory slot freely
   const handleUpdateSignatory = (
@@ -340,7 +352,7 @@ export const ReportPrintView: React.FC<ReportPrintViewProps> = ({
     const updated: Report = {
       ...currentReport,
       signatories: undefined,
-      signatoryCount: 3,
+      signatoryCount: getDefaultSignatoryCount(currentReport),
     };
     setCurrentReport(updated);
     dbService.saveReport(updated);
@@ -538,7 +550,8 @@ export const ReportPrintView: React.FC<ReportPrintViewProps> = ({
                 <strong className="text-teal-900 font-mono">
                   {baseDimensions.width.toFixed(1)} × {baseDimensions.height.toFixed(1)} mm
                 </strong>{' '}
-                ({orientation.toUpperCase()}) • Signatories: {signatoryCount} of 3 active
+                ({orientation.toUpperCase()}) • Signatories: {signatoryCount}{' '}
+                {signatoryCount === 1 ? 'signature' : 'signatures'}
               </p>
             </div>
           </div>
@@ -739,15 +752,24 @@ export const ReportPrintView: React.FC<ReportPrintViewProps> = ({
               </div>
             </div>
 
-            {/* 3 Interactive Signatory Slot Configuration Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-              {[0, 1, 2].slice(0, signatoryCount).map((idx) => {
+            {/* Interactive Signatory Slot Configuration Cards */}
+            <div
+              className={`grid grid-cols-1 gap-3.5 ${
+                visibleSlotIndices.length >= 3
+                  ? 'md:grid-cols-3'
+                  : visibleSlotIndices.length === 2
+                  ? 'md:grid-cols-2'
+                  : 'md:grid-cols-1 md:max-w-md'
+              }`}
+            >
+              {visibleSlotIndices.map((idx, pos) => {
                 const sig = activeSignatories[idx] || {
                   type: idx === 2 ? 'doctor' : 'technician',
                   title: idx === 0 ? 'PREPARED BY' : idx === 1 ? 'CHECKED BY' : 'VERIFIED BY',
                   name: '',
                   designation: '',
                 };
+                const isSole = visibleSlotIndices.length === 1;
 
                 return (
                   <div
@@ -758,13 +780,15 @@ export const ReportPrintView: React.FC<ReportPrintViewProps> = ({
                     <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                       <span className="text-xs font-black text-teal-900 flex items-center gap-1.5">
                         <span className="w-5 h-5 rounded-full bg-teal-100 text-teal-900 text-[11px] font-bold flex items-center justify-center">
-                          {idx + 1}
+                          {pos + 1}
                         </span>
-                        {idx === 0
+                        {isSole
+                          ? 'Sole Signatory (Doctor)'
+                          : idx === 0
                           ? 'First Signatory (Left)'
                           : idx === 1
                           ? 'Second Signatory (Center)'
-                          : 'Third Signatory (Right)'}
+                          : 'Signatory (Right)'}
                       </span>
                     </div>
 
