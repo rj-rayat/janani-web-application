@@ -165,9 +165,9 @@ const MainApp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#edf0f7] p-2 sm:p-4 lg:p-6 text-slate-900 selection:bg-teal-600 selection:text-white font-sans flex flex-col items-center">
+    <div className="min-h-screen bg-[#edf0f7] p-2 sm:p-4 lg:p-6 text-slate-900 selection:bg-teal-600 selection:text-white font-sans flex flex-col items-center print:min-h-0 print:p-0 print:bg-white print:block">
       {/* Master Main Application Container Frame (Finnova-style rounded card structure) */}
-      <div className="w-full max-w-[1520px] bg-white rounded-[28px] sm:rounded-[36px] shadow-[0_20px_70px_-15px_rgba(15,23,42,0.09)] border border-slate-200/90 flex flex-col overflow-hidden min-h-[92vh]">
+      <div className="w-full max-w-[1520px] bg-white rounded-[28px] sm:rounded-[36px] shadow-[0_20px_70px_-15px_rgba(15,23,42,0.09)] border border-slate-200/90 flex flex-col overflow-hidden min-h-[92vh] print:max-w-none print:min-h-0 print:rounded-none print:shadow-none print:border-none print:overflow-visible">
         
         {/* Top Navigation Bar with Capsule Menu */}
         <header className="no-print border-b border-slate-100 px-5 sm:px-8 py-4 flex items-center justify-between gap-4 bg-white/95 backdrop-blur-md sticky top-0 z-40">
