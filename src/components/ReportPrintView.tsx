@@ -495,7 +495,7 @@ export const ReportPrintView: React.FC<ReportPrintViewProps> = ({
   const isUltraCompact = density === 'ultra_compact';
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 print:space-y-0">
       {/* Dynamic Print CSS Injection */}
       <style>
         {`
@@ -1095,7 +1095,7 @@ export const ReportPrintView: React.FC<ReportPrintViewProps> = ({
       </div>
 
       {/* Screen Preview Container Wrapper */}
-      <div className="overflow-x-auto pb-8 pt-2 flex justify-center bg-slate-100/70 p-2 sm:p-4 rounded-3xl border border-slate-200">
+      <div className="overflow-x-auto pb-8 pt-2 flex justify-center bg-slate-100/70 p-2 sm:p-4 rounded-3xl border border-slate-200 print:overflow-visible print:p-0 print:m-0 print:bg-transparent print:border-none print:rounded-none print:shadow-none">
         {/* Printable Sheet Container */}
         <div
           id="report-print-sheet"
